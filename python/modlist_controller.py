@@ -8,9 +8,9 @@ class ModlistController:
     #   https://wiki.factorio.com/Property_tree
 
     def __init__(self, factorioFolderDir=None, factorioModDir=None):
-        if factorioModDir != None:
+        if factorioModDir is not None:
             self.modFolderDir = factorioModDir
-        elif factorioFolderDir == None:
+        elif factorioFolderDir is None:
             self.modFolderDir = (
                 f"{os.path.abspath(os.getenv('APPDATA'))}/Factorio/mods/"
             )

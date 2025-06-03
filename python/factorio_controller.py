@@ -89,11 +89,11 @@ class FactorioController:
                             re.match(
                                 r" *[0-9]+\.[0-9]{3} Error ModManager\.cpp\:[0-9]+\: *",
                                 line,
-                            ).regs[0][1]:
+                            ).regs[0][1] :
                         ]
                     )
                     return False  # Error during launch launch
-            elif type(line) is bool and line == False:
+            elif type(line) is bool and line is False:
                 return False  # Terminated factorio
         return False  # unexpected end
 
@@ -194,8 +194,8 @@ class FactorioController:
             self.factorioExe
         )  # because factorio expects the exe as first arg...
         # args.extend(convert_to_arglist("--verbose"))
-        args.extend(convert_to_arglist(f"--load-scenario base/freeplay"))
-        if factorioModDir != None:
+        args.extend(convert_to_arglist("--load-scenario base/freeplay"))
+        if factorioModDir is not None:
             args.append("--mod-directory")
             args.append(factorioModDir)
 
