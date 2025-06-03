@@ -55,7 +55,7 @@ class UnitTestController:
             factorioInstallDir, self.logger, factorioModDir
         )
 
-    def __del__(self):
+    def close(self):
         # Reset mod config and mod settings to the backed up values
         self.currentModlistController.disableMod("factorio-unit-test")
         self.currentModlistController.writeConfigurationFile()
@@ -146,7 +146,6 @@ class UnitTestController:
         # TODO support wildcard test matching?
 
         for test in testFiles.keys():
-            print("Copying test file:", test)
             if test.startswith("common."):
                 test = test[7:]  # Remove 'common.' prefix
                 # Take from factorio-unit-test mod rather than the mod being tested
@@ -218,3 +217,4 @@ if __name__ == "__main__":
     testConfigurations: UnitTestConfiguration = UnitTestConfiguration(modToTest, configFile)
 
     testController.TestConfigurations(testConfigurations)
+    testController.close()

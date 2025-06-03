@@ -23,6 +23,12 @@ class SettingsFileReader:
         value = self.readByte()
         return value if value < 255 else self.readUnsignedInteger(spaceOptimised=False)
 
+    def readSignedLong(self) -> int:
+        return int.from_bytes(self.file.read(8), byteorder="little", signed=True)
+    
+    def readUnsignedLong(self) -> int:
+        return int.from_bytes(self.file.read(8), byteorder="little")
+
     def readNumber(self) -> float:
         # IEEE 754 double-precision binary floating-point format
         return struct.unpack("<d", self.file.read(8))[0]
@@ -54,6 +60,10 @@ class SettingsFileReader:
                 dictKey = self.readString()
                 treeVal[dictIndex] = [dictKey, self.readDictionary()]
             return treeVal
+        elif treeType == 6:  # Signed integer
+            return self.readSignedLong()
+        elif treeType == 7:  # Unsigned integer
+            return self.readUnsignedLong()
         else:
             raise ValueError(f"Type '{treeType}' is invalid for dict {dictName}.")
 

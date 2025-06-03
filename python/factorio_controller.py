@@ -19,11 +19,11 @@ class FactorioController:
             )
         else:
             self.factorioExe: str = os.path.abspath(
-                f"{factorioInstallDir}/bin/x64/factorio.exe"
+                f"{factorioInstallDir}"
             )
         if log is None:
             self.log: Callable[[str], None] = lambda msg: print(
-                f"angelsdev-unit-test: {msg}"
+                f"factorio-unit-test: {msg}"
             )
         else:
             self.log: Callable[[str], None] = log
@@ -71,10 +71,10 @@ class FactorioController:
         # This does not actually execute anything, it waits till the mod signals the tests are finished while logging all unit test results
         for line in self.getGameOutput():
             if type(line) is str:
-                if re.fullmatch(r"angelsdev\-unit\-test: .*", line):
+                if re.fullmatch(r"factorio\-unit\-test: .*", line):
                     self.log(line[21:])
                     if re.fullmatch(
-                        r"angelsdev\-unit\-test: Finished testing!.*", line
+                        r"factorio\-unit\-test: Finished testing!.*", line
                     ):
                         return (
                             True
