@@ -165,7 +165,7 @@ local function process_tech(tech)
   end
 
   -- Check if any recipes unlocked by this tech use ingredients that are not available
-  -- Use while loop with escape to catch reipes that feed each other
+  -- Use while loop with escape to catch recipes that feed each other
   -- Example
   --   Recipe 1: A > B
   --   Recipe 2: B > A

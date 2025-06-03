@@ -39,5 +39,10 @@
                 "angelsaddons-storage",
             ],
         },
-    }
+    },
+    tests:
+    {
+        "test-science-packs": {},  // Inside dict: support conditional skip/run? provide args to test?
+        "common.unit-test-001": {},
+    },
 }

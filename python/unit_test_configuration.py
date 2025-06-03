@@ -5,21 +5,25 @@ from typing import Iterable, Optional
 
 SettingsType = dict[str, dict[str, bool]]
 ModListType = list[str]
+TestListType = dict[str, any]
 ConfigurationType = dict[str, SettingsType | ModListType]
 
 class UnitTestConfiguration:
     """An iterable object containing all test configurations."""
 
-    def __init__(self, configFile: Optional[str]):
+    def __init__(self, modName: str, configFile: Optional[str]):
+        self.modName: str = modName
         self.default_settings: SettingsType = {}
         self.configurations: ConfigurationType = {}
+        self.tests: TestListType = {}
 
         # Read config json and populate configurations
         if configFile is not None:
             configDataStr = _jsonnet.evaluate_file(configFile)
             configData = json.loads(configDataStr)
             self.default_settings = configData.get("default_settings", {})
-            self.configurations = configData.get("configurations", [])
+            self.configurations = configData.get("configurations", [])  # TODO take into account default settings
+            self.tests = configData.get("tests", {})
 
     def __iter__(
         self,

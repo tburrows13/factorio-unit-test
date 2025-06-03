@@ -1,6 +1,6 @@
 from __future__ import annotations
 from typing import Optional
-import os, sys, argparse
+import os, sys, shutil, argparse
 
 from mod_builder import ModBuilder
 from mod_downloader import ModDownloader
@@ -70,6 +70,7 @@ class UnitTestController:
         for configName, config in testConfigurations:
             self.__logTestConfiguration(configName)
             self.__setupTestConfiguration(config["mods"], config["settings"])
+            self.__setupTestFiles(testConfigurations.modName, testConfigurations.tests)
             testResults[configName] = self.__executeUnitTests()
         if logSummary:
             self.logger("Summary:", leading_newline=True)
@@ -133,6 +134,36 @@ class UnitTestController:
                 )
         self.settingsController.writeSettingsFile()
 
+    def __setupTestFiles(
+        self, modName: str, testFiles: dict[str, any]
+    ) -> None:
+        # Copy across all test files and populate test list file
+        testDir = f"{self.modlistController.modFolderDir}/factorio-unit-test/temp"
+        if os.path.exists(testDir):
+            shutil.rmtree(testDir)
+        os.makedirs(testDir)
+
+        # TODO support wildcard test matching?
+
+        for test in testFiles.keys():
+            print("Copying test file:", test)
+            if test.startswith("common."):
+                test = test[7:]  # Remove 'common.' prefix
+                # Take from factorio-unit-test mod rather than the mod being tested
+                shutil.copy(f"{self.modlistController.modFolderDir}/factorio-unit-test/unit-tests/{test}.lua", f"{testDir}/{test}.lua")
+            else:
+                shutil.copy(f"{self.modlistController.modFolderDir}/{modName}/unit-tests/{test}.lua", f"{testDir}/{test}.lua")
+
+        # Write the test list file
+        testListFileStr = "return {\n"
+        for test in testFiles.keys():
+            if test.startswith("common."):
+                test = test[7:]  # Remove 'common.' prefix
+            testListFileStr += f'  "{test}",\n'
+        testListFileStr += "}\n"
+        with open(f"{self.modlistController.modFolderDir}/factorio-unit-test/unit-test-list.lua", "w") as testListFile:
+            testListFile.write(testListFileStr)
+
     def __executeUnitTests(self) -> bool:
         # Execute unit tests for the current test configuration
         self.factorioController.launchGame()
@@ -184,6 +215,6 @@ if __name__ == "__main__":
     )
     
     configFile = testController.currentModlistController.modFolderDir + f"/{modToTest}/unit-test-config.jsonnet"
-    testConfigurations: UnitTestConfiguration = UnitTestConfiguration(configFile)
+    testConfigurations: UnitTestConfiguration = UnitTestConfiguration(modToTest, configFile)
 
     testController.TestConfigurations(testConfigurations)
