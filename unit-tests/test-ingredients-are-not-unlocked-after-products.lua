@@ -97,7 +97,7 @@ local function process_tech(tech)
       end
 
       -- Fluids from Boilers
-      -- Fluids from Offshore Pumps
+      -- Fluids from Tiles (via offshore pumps)
 
       local item_filters = {}
       table.insert(item_filters, { filter = "name", mode = "and", name = item_names })
@@ -112,8 +112,11 @@ local function process_tech(tech)
               recipes[recipe.name].products.fluids[fluidbox.filter.name] = true
             end
           end
-        elseif entity.type == "offshore-pump" then
-          recipes[recipe.name].products.fluids[entity.fluid.name] = true
+        end
+      end
+      for _, tile in pairs(prototypes.tile) do
+        if tile.fluid then
+          recipes[recipe.name].products.fluids[tile.fluid.name] = true
         end
       end
     end

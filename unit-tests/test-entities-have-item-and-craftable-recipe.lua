@@ -187,7 +187,7 @@ local test_entities_have_item_and_craftable_recipe = function()
           item_name = item.name
         end
         table.insert(item_filters, { filter = "name", invert = false, mode = "or", name = item_name })
-        table.insert(item_filters, { filter = "flag", invert = true, mode = "and", flag = "hidden" })
+        table.insert(item_filters, { filter = "hidden", invert = true, mode = "and"})
       end
 
       local item_prototypes = prototypes.get_item_filtered(item_filters)
