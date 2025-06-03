@@ -13,7 +13,7 @@ from unit_test_logger import UnitTestLogger
 
 class UnitTestController:
     def __init__(
-        self: UnitTestController,
+        self,
         updateMods: bool = True,
         factorioInstallDir: Optional[str] = None,
         factorioFolderDir: Optional[str] = None,
@@ -55,14 +55,14 @@ class UnitTestController:
             factorioInstallDir, self.logger, factorioModDir
         )
 
-    def __del__(self: UnitTestController):
+    def __del__(self):
         # Reset mod config and mod settings to the backed up values
         self.currentModlistController.disableMod("angelsdev-unit-test")
         self.currentModlistController.writeConfigurationFile()
         self.currentSettingsController.writeSettingsFile()
 
     def TestConfiguations(
-        self: UnitTestController,
+        self,
         testConfigurations: UnitTestConfiguration,
         logSummary: bool = True,
     ) -> None:
