@@ -1,6 +1,6 @@
 from __future__ import annotations
 from typing import Optional
-import os, sys, getopt
+import os, sys, argparse
 
 from mod_builder import ModBuilder
 from mod_downloader import ModDownloader
@@ -27,9 +27,9 @@ class UnitTestController:
         else:
             self.factorioFolderDir: str = os.path.abspath(factorioFolderDir)
 
-        if updateMods:
-            self.__buildAngelsMods()
-            self.__buildBobsMods()
+        #if updateMods:  # TODO
+        #    self.__buildAngelsMods()
+        #    self.__buildBobsMods()
 
         # Backup the current mod config and mod settings
         self.currentModlistController = ModlistController(
@@ -57,19 +57,19 @@ class UnitTestController:
 
     def __del__(self):
         # Reset mod config and mod settings to the backed up values
-        self.currentModlistController.disableMod("angelsdev-unit-test")
+        self.currentModlistController.disableMod("factorio-unit-test")
         self.currentModlistController.writeConfigurationFile()
         self.currentSettingsController.writeSettingsFile()
 
-    def TestConfiguations(
+    def TestConfigurations(
         self,
         testConfigurations: UnitTestConfiguration,
         logSummary: bool = True,
     ) -> None:
         testResults: dict[str, bool] = dict()
-        for configName, modList, settingCustomisation in testConfigurations:
+        for configName, config in testConfigurations:
             self.__logTestConfiguration(configName)
-            self.__setupTestConfiguration(modList, settingCustomisation)
+            self.__setupTestConfiguration(config["mods"], config["settings"])
             testResults[configName] = self.__executeUnitTests()
         if logSummary:
             self.logger("Summary:", leading_newline=True)
@@ -115,8 +115,8 @@ class UnitTestController:
         self.modlistController.disableAllMods()
         for modName in modList:
             self.modlistController.enableMod(modName)
-        if "angelsdev-unit-test" not in modList:
-            self.modlistController.enableMod("angelsdev-unit-test")
+        if "factorio-unit-test" not in modList:
+            self.modlistController.enableMod("factorio-unit-test")
         self.modlistController.writeConfigurationFile()
 
         # Revert settings file (default prior to changing the settings file)
@@ -142,28 +142,48 @@ class UnitTestController:
 
 
 if __name__ == "__main__":
-    factorioFolderDir: Optional[str] = None
-    factorioInstallDir: Optional[str] = None
-    factorioModDir: Optional[str] = None
-    logToFile: bool = False
-
-    opts, args = getopt.getopt(
-        sys.argv[1:], "f:i:l:m:", ["factoriodir=", "installdir=", "mod-directory="]
+    parser = argparse.ArgumentParser(
+        description="Run Factorio unit tests with various configurations."
     )
-    for opt, arg in opts:
-        if opt in ("-f", "--factoriodir"):
-            factorioFolderDir = os.path.realpath(arg.strip())
-        if opt in ("-i", "--installdir"):
-            factorioInstallDir = os.path.realpath(arg.strip())
-        if opt in ("-l"):
-            logToFile = True
-        if opt in ("-m", "--mod-directory"):
-            factorioModDir = os.path.realpath(arg.strip())
+    parser.add_argument(
+        "-f", "--factoriodir", type=str, help="Path to the Factorio user data directory"
+    )
+    parser.add_argument(
+        "-i",
+        "--installdir",
+        type=str,
+        help="Path to the Factorio installation directory",
+    )
+    parser.add_argument("-l", "--log", action="store_true", help="Log output to file")
+    parser.add_argument(
+        "-m", "--mod-directory", type=str, help="Path to the Factorio mods directory"
+    )
+    parser.add_argument("mod", type=str, help="The mod to test")
 
-    UnitTestController(
+    args = parser.parse_args()
+
+    factorioFolderDir: Optional[str] = (
+        os.path.realpath(args.factoriodir.strip()) if args.factoriodir else None
+    )
+    factorioInstallDir: Optional[str] = (
+        os.path.realpath(args.installdir.strip()) if args.installdir else None
+    )
+    factorioModDir: Optional[str] = (
+        os.path.realpath(args.mod_directory.strip()) if args.mod_directory else None
+    )
+    logToFile: bool = args.log
+    modToTest: str = args.mod.strip()
+
+
+    testController = UnitTestController(
         updateMods=False,
         factorioInstallDir=factorioInstallDir,
         factorioFolderDir=factorioFolderDir,
         logToFile=logToFile,
         factorioModDir=factorioModDir,
-    ).TestConfiguations(UnitTestConfiguration())
+    )
+    
+    configFile = testController.currentModlistController.modFolderDir + f"/{modToTest}/unit-test-config.jsonnet"
+    testConfigurations: UnitTestConfiguration = UnitTestConfiguration(configFile)
+
+    testController.TestConfigurations(testConfigurations)

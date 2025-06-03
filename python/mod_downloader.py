@@ -6,6 +6,7 @@ import json
 
 class ModDownloader:
     def __init__(self, modName: str, factorioFolderDir: Optional[str] = None):
+        raise SystemExit  # Disable until properly assessed to prevent accidental mod deletion
         if factorioFolderDir is None:
             self.factorioFolderDir = (
                 f"{os.path.abspath(os.getenv('APPDATA'))}/Factorio/"

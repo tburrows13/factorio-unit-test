@@ -9,6 +9,7 @@ class ModBuilder:
         factorioFolderDir: Optional[str] = None,
         factorioModDir: Optional[str] = None,
     ):
+        raise SystemExit  # Disable until properly assessed to prevent accidental mod deletion
         self.modNames = [
             modName
             for modName in next(
