@@ -11,7 +11,7 @@ local bonus_upgrade_technologies = {}
 
 local science_pack_level = {}
 local function calculate_science_pack_level()
-  local technology_overhaul = game.active_mods["angelsindustries"] and settings.startup["angels-enable-tech"].value
+  local technology_overhaul = script.active_mods["angelsindustries"] and settings.startup["angels-enable-tech"].value
     or false
 
   if technology_overhaul then
@@ -65,7 +65,7 @@ local function calculate_science_pack_level()
     end
   end
 
-  if game.active_mods["angelsbioprocessing"] then
+  if script.active_mods["angelsbioprocessing"] then
     science_pack_level["token-bio"] = science_pack_level["angels-science-pack-red"]
       or science_pack_level["automation-science-pack"]
 
@@ -78,7 +78,7 @@ local function calculate_science_pack_level()
     science_pack_level["alien-artifact-green-tool"] = 0
   end
 
-  if game.active_mods["bobtech"] then
+  if script.active_mods["bobtech"] then
     -- bobs regular science packs
     for pack_name, pack_level in pairs({
       ["steam-science-pack"] = 30,
@@ -88,7 +88,7 @@ local function calculate_science_pack_level()
       science_pack_level[pack_name] = pack_level
     end
 
-    if game.active_mods["bobenemies"] then
+    if script.active_mods["bobenemies"] then
       -- bobs alien science packs
       for pack_name, pack_level in pairs({
         ["science-pack-gold"] = 50
@@ -113,7 +113,7 @@ local function calculate_science_pack_level()
     end
   end
 
-  if game.active_mods["bobmodules"] and settings.startup["bobmods-modules-enable-modules-lab"].value then
+  if script.active_mods["bobmodules"] and settings.startup["bobmods-modules-enable-modules-lab"].value then
     for pack_name, pack_level in pairs({
       -- bobs module science packs
       ["speed-processor"] = 50
@@ -144,7 +144,7 @@ local function calculate_science_pack_level()
     technologies_to_ignore["speed-module-5"] = true
   end
 
-  if game.active_mods["SeaBlock"] then
+  if script.active_mods["SeaBlock"] then
     for pack_name, pack_level in pairs({
       ["sb-angelsore3-tool"] = 0,
       ["sb-algae-brown-tool"] = 0,
@@ -155,11 +155,11 @@ local function calculate_science_pack_level()
     end
   end
 
-  if game.active_mods["ScienceCostTweakerM"] then
+  if script.active_mods["ScienceCostTweakerM"] then
     science_pack_level["sct-bio-science-pack"] = science_pack_level["token-bio"]
   end
 
-  if game.active_mods["SpaceMod"] then
+  if script.active_mods["SpaceMod"] then
     technologies_to_ignore["space-assembly"] = true
     technologies_to_ignore["protection-fields"] = true
     technologies_to_ignore["fusion-reactor"] = true
