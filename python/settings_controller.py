@@ -1,6 +1,7 @@
 from typing import Union, Optional
 import os, sys, getopt
 import struct
+from pathlib import Path
 
 
 class SettingsFileReader:
@@ -129,18 +130,21 @@ class SettingsController:
     #   https://wiki.factorio.com/Mod_settings_file_format
     #   https://wiki.factorio.com/Property_tree
 
-    def __init__(self, factorioFolderDir=None, factorioModDir=None):
+    def __init__(
+        self,
+        factorioFolderDir: Optional[Path] = None,
+        factorioModDir: Optional[Path] = None,
+    ):
         if factorioModDir is not None:
-            self.modFolderDir = factorioModDir
+            self.modFolderDir = Path(factorioModDir)
         elif factorioFolderDir is None:
-            self.modFolderDir = (
-                f"{os.path.abspath(os.getenv('APPDATA'))}/Factorio/mods/"
-            )
+            self.modFolderDir = Path(os.getenv("APPDATA")) / "Factorio" / "mods"
         else:
-            self.modFolderDir = f"{os.path.abspath(factorioFolderDir)}/mods/"
+            self.modFolderDir = Path(factorioFolderDir) / "mods"
 
     def readSettingsFile(self, filename: str = "mod-settings.dat") -> None:
-        with open(f"{self.modFolderDir}/{filename}", "rb") as modSettingsFile:
+        filepath = self.modFolderDir / filename
+        with filepath.open("rb") as modSettingsFile:
             modSettings = SettingsFileReader(modSettingsFile)
             self.settings = dict()
             # Version of the mod
@@ -175,10 +179,9 @@ class SettingsController:
                     ]
 
     def writeSettingsFile(self, filename: str = "mod-settings.dat") -> None:
-        filepath = f"{self.modFolderDir}/{filename}"
-        if os.path.exists(filepath):
-            os.remove(filepath)
-        with open(filepath, "wb") as modSettingsFile:
+        filepath = self.modFolderDir / filename
+        filepath.unlink(missing_ok=True)  # Delete current file if exists
+        with filepath.open("wb") as modSettingsFile:
             modSettings = SettingsFileWriter(modSettingsFile)
 
             # Version of the mod
@@ -237,15 +240,15 @@ class SettingsController:
 
 
 if __name__ == "__main__":
-    factorioFolderDir: Optional[str] = None
-    factorioModDir: Optional[str] = None
+    factorioFolderDir: Optional[Path] = None
+    factorioModDir: Optional[Path] = None
 
     opts, args = getopt.getopt(sys.argv[1:], "f:m:", ["factoriodir=", "mod-directory="])
     for opt, arg in opts:
         if opt in ("-f", "--factoriodir"):
-            factorioFolderDir = os.path.realpath(arg.strip())
+            factorioFolderDir = Path(arg.strip()).expanduser().resolve()
         if opt in ("-m", "--mod-directory"):
-            factorioModDir = os.path.realpath(arg.strip())
+            factorioModDir = Path(arg.strip()).expanduser().resolve()
 
     sc = SettingsController(factorioFolderDir, factorioModDir)
     sc.readSettingsFile()

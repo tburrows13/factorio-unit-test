@@ -1,6 +1,7 @@
 from __future__ import annotations
 from typing import Optional
 import os, sys, getopt
+from pathlib import Path
 
 from mod_builder import ModBuilder
 from mod_downloader import ModDownloader
@@ -16,21 +17,21 @@ class UnitTestController:
     def __init__(
         self,
         updateMods: bool = True,
-        factorioInstallDir: Optional[str] = None,
-        factorioFolderDir: Optional[str] = None,
+        factorioInstallDir: Optional[Path] = None,
+        factorioFolderDir: Optional[Path] = None,
         logToFile: bool = False,
-        factorioModDir: Optional[str] = None,
+        factorioModDir: Optional[Path] = None,
     ):
         if factorioFolderDir is None:
-            self.factorioFolderDir: str = os.path.abspath(
-                f"{os.getenv('APPDATA')}/Factorio/"
-            )
+            self.factorioFolderDir: Path = Path(f"{os.getenv('APPDATA')}/Factorio/")
         else:
-            self.factorioFolderDir: str = os.path.abspath(factorioFolderDir)
+            self.factorioFolderDir = Path(factorioFolderDir)
 
+        """
         if updateMods:
             self.__buildAngelsMods()
             self.__buildBobsMods()
+        """
 
         # Backup the current mod config and mod settings
         self.currentModlistController = ModlistController(
@@ -77,6 +78,7 @@ class UnitTestController:
             for testName, testResult in testResults.items():
                 self.logger(f"[{'PASSED' if testResult else 'FAILED'}] {testName}")
 
+    """
     def __buildAngelsMods(self) -> None:
         ModBuilder(self.factorioFolderDir).createAllMods()
 
@@ -104,6 +106,7 @@ class UnitTestController:
         for name, download in bobmods.items():
             if download:
                 ModDownloader(name, self.factorioFolderDir).download()
+    """
 
     def __logTestConfiguration(self, configName: str) -> None:
         self.logger(f"Testing {configName}", True)
@@ -143,9 +146,9 @@ class UnitTestController:
 
 
 if __name__ == "__main__":
-    factorioFolderDir: Optional[str] = None
-    factorioInstallDir: Optional[str] = None
-    factorioModDir: Optional[str] = None
+    factorioFolderDir: Optional[Path] = None
+    factorioInstallDir: Optional[Path] = None
+    factorioModDir: Optional[Path] = None
     logToFile: bool = False
 
     opts, args = getopt.getopt(
@@ -153,13 +156,13 @@ if __name__ == "__main__":
     )
     for opt, arg in opts:
         if opt in ("-f", "--factoriodir"):
-            factorioFolderDir = os.path.realpath(arg.strip())
+            factorioFolderDir = Path(arg.strip()).expanduser().resolve()
         if opt in ("-i", "--installdir"):
-            factorioInstallDir = os.path.realpath(arg.strip())
+            factorioInstallDir = Path(arg.strip()).expanduser().resolve()
         if opt in ("-l"):
             logToFile = True
         if opt in ("-m", "--mod-directory"):
-            factorioModDir = os.path.realpath(arg.strip())
+            factorioModDir = Path(arg.strip()).expanduser().resolve()
 
     UnitTestController(
         updateMods=False,

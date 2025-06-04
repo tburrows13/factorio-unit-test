@@ -1,6 +1,7 @@
 import os, sys, getopt
 import json
 from typing import Optional
+from pathlib import Path
 
 
 class ModlistController:
@@ -8,22 +9,26 @@ class ModlistController:
     #   https://wiki.factorio.com/Mod_settings_file_format
     #   https://wiki.factorio.com/Property_tree
 
-    def __init__(self, factorioFolderDir=None, factorioModDir=None):
+    def __init__(
+        self,
+        factorioFolderDir: Optional[Path] = None,
+        factorioModDir: Optional[Path] = None,
+    ):
         if factorioModDir is not None:
-            self.modFolderDir = factorioModDir
+            self.modFolderDir: Path = Path(factorioModDir)
         elif factorioFolderDir is None:
-            self.modFolderDir = (
-                f"{os.path.abspath(os.getenv('APPDATA'))}/Factorio/mods/"
-            )
+            self.modFolderDir = Path(os.getenv("APPDATA")) / "Factorio" / "mods"
         else:
-            self.modFolderDir = f"{os.path.abspath(factorioFolderDir)}/mods/"
+            self.modFolderDir = Path(factorioFolderDir) / "mods"
 
     def readConfigurationFile(self, filename: str = "mod-list.json") -> None:
-        with open(f"{self.modFolderDir}/{filename}", "r") as modlistFile:
+        filepath = self.modFolderDir / filename
+        with filepath.open("r") as modlistFile:
             self.modlist = json.load(modlistFile).get("mods")
 
     def writeConfigurationFile(self, filename: str = "mod-list.json") -> None:
-        with open(f"{self.modFolderDir}/{filename}", "w") as modlistFile:
+        filepath = self.modFolderDir / filename
+        with filepath.open("w") as modlistFile:
             json.dump({"mods": self.modlist}, modlistFile, indent=2)
 
     def disableAllMods(self) -> None:
@@ -48,15 +53,15 @@ class ModlistController:
 
 
 if __name__ == "__main__":
-    factorioFolderDir: Optional[str] = None
-    factorioModDir: Optional[str] = None
+    factorioFolderDir: Optional[Path] = None
+    factorioModDir: Optional[Path] = None
 
     opts, args = getopt.getopt(sys.argv[1:], "f:m:", ["factoriodir=", "mod-directory="])
     for opt, arg in opts:
         if opt in ("-f", "--factoriodir"):
-            factorioFolderDir = os.path.realpath(arg.strip())
+            factorioFolderDir = Path(arg.strip()).expanduser().resolve()
         if opt in ("-m", "--mod-directory"):
-            factorioModDir = os.path.realpath(arg.strip())
+            factorioModDir = Path(arg.strip()).expanduser().resolve()
 
     mc = ModlistController(factorioFolderDir, factorioModDir)
     mc.readConfigurationFile()

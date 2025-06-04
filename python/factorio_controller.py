@@ -4,24 +4,24 @@ from shlex import shlex
 import json
 import re
 import time
+from pathlib import Path
 
 
 class FactorioController:
 
     def __init__(
         self,
-        factorioInstallDir: Optional[str] = None,
+        factorioInstallDir: Optional[Path] = None,
         log: Optional[Callable[[str], None]] = None,
-        factorioModDir: Optional[str] = None,
+        factorioModDir: Optional[Path] = None,
     ):
         if factorioInstallDir is None:
-            self.factorioExe: str = os.path.abspath(
-                f"{self.__retrieveSteamGameInstallLocation(427520)}/bin/x64/factorio.exe"
+            self.factorioExe: Path = (
+                Path(self.__retrieveSteamGameInstallLocation(427520))
+                / "bin/x64/factorio.exe"
             )
         else:
-            self.factorioExe: str = os.path.abspath(
-                f"{factorioInstallDir}/bin/x64/factorio.exe"
-            )
+            self.factorioExe = factorioInstallDir / "bin/x64/factorio.exe"
         if log is None:
             self.log: Callable[[str], None] = lambda msg: print(
                 f"angelsdev-unit-test: {msg}"
@@ -100,6 +100,7 @@ class FactorioController:
 
     def __retrieveSteamGameInstallLocation(self, steamGameID: int) -> str:
         # Find install location of steam itself
+        # TODO make platform-agnostic and use pathlib
         steamApp = subprocess.run(
             ["reg", "query", "HKCU\Software\Valve\Steam", "/v", "SteamExe"],
             stdout=subprocess.PIPE,
@@ -186,19 +187,19 @@ class FactorioController:
 
         return steamGameFolder
 
-    def __createFactorioArgs(self, factorioModDir: Optional[str] = None) -> list:
+    def __createFactorioArgs(self, factorioModDir: Optional[Path] = None) -> list:
         def convert_to_arglist(arg: str) -> list:
             return arg.split(" ")
 
         args = []  # https://wiki.factorio.com/Command_line_parameters
         args.append(
-            self.factorioExe
+            str(self.factorioExe)
         )  # because factorio expects the exe as first arg...
         # args.extend(convert_to_arglist("--verbose"))
         args.extend(convert_to_arglist("--load-scenario base/freeplay"))
         if factorioModDir is not None:
             args.append("--mod-directory")
-            args.append(factorioModDir)
+            args.append(str(factorioModDir))
 
         return args
 
