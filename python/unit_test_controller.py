@@ -31,6 +31,7 @@ class UnitTestController:
 
         if not modDirectory:
             modDirectory = userDataDirectory / "mods"
+            self.modDirectory = modDirectory
 
         """
         if updateMods:
@@ -151,21 +152,24 @@ class UnitTestController:
         testListFileStr = "return {\n"
 
         for test in testFiles.keys():
-            print("Copying test file:", test)
             if test.startswith("common."):
                 test = test[7:]  # Remove 'common.' prefix
                 # Take from factorio-unit-test mod rather than the mod being tested
-                for file_path in (
-                    modDirectory / "factorio-unit-test" / "unit-tests"
-                ).glob(test + ".lua"):
+                file_paths = sorted(
+                    (modDirectory / "factorio-unit-test" / "unit-tests").glob(test + ".lua")
+                )
+                if not file_paths:
+                    self.logger(f"No matching test files found for common.{test}")
+                for file_path in file_paths:
                     shutil.copy(file_path, testDir / file_path.name)
-                    testListFileStr += f'  "{file_path.name}",\n'
+                    testListFileStr += f'  "{file_path.stem}",\n'
             else:
-                for file_path in (modDirectory / modName / "unit-tests").glob(
-                    test + ".lua"
-                ):
+                file_paths = sorted((modDirectory / modName / "unit-tests").glob(test + ".lua"))
+                if not file_paths:
+                    self.logger(f"No matching test files found for {test}")
+                for file_path in file_paths:
                     shutil.copy(file_path, testDir / file_path.name)
-                    testListFileStr += f'  "{file_path.name}",\n'
+                    testListFileStr += f'  "{file_path.stem}",\n'
 
         testListFileStr += "}\n"
         with (modDirectory / "factorio-unit-test" / "temp-test-list.lua").open(

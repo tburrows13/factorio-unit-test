@@ -28,7 +28,7 @@ class UnitTestConfiguration:
 
         # Read config json and populate configurations
         if configFile is not None:
-            configDataStr = _jsonnet.evaluate_file(configFile)
+            configDataStr = _jsonnet.evaluate_file(str(configFile))
             allConfigData = json.loads(configDataStr)
             self.default_settings = allConfigData.get("default_settings", {})
             self.configurations = allConfigData.get("configurations", [])

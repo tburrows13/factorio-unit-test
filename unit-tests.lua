@@ -14,7 +14,7 @@ for _, unit_test_name in ipairs(unit_test_names) do
       end
     end
   else
-    error(string.format("Failed to load unit test '%s'", unit_test_name))
+    error(string.format("Failed to load unit test '%s':\n%s", unit_test_name, unit_test_funcs))
   end
 end
 
