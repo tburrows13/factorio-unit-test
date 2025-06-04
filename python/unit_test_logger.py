@@ -28,10 +28,10 @@ class UnitTestLogger:
 
     def __call__(self, msg: str, leading_newline: bool = False) -> None:
         lead = "\n" if leading_newline else ""
-        print(f"{lead}angelsdev-unit-test: {msg}")
+        print(f"{lead}factorio-unit-test: {msg}")
         if self.logTofile and self.logFileHandler:
             print(
-                f"{lead}angelsdev-unit-test: {msg}",
+                f"{lead}factorio-unit-test: {msg}",
                 file=self.logFileHandler,
                 flush=True,
             )

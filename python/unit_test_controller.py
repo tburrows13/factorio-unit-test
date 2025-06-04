@@ -55,7 +55,7 @@ class UnitTestController:
 
     def __del__(self):
         # Reset mod config and mod settings to the backed up values
-        self.currentModlistController.disableMod("angelsdev-unit-test")
+        self.currentModlistController.disableMod("factorio-unit-test")
         self.currentModlistController.writeConfigurationFile()
         self.currentSettingsController.writeSettingsFile()
 
@@ -115,8 +115,8 @@ class UnitTestController:
         self.modlistController.disableAllMods()
         for modName in modList:
             self.modlistController.enableMod(modName)
-        if "angelsdev-unit-test" not in modList:
-            self.modlistController.enableMod("angelsdev-unit-test")
+        if "factorio-unit-test" not in modList:
+            self.modlistController.enableMod("factorio-unit-test")
         self.modlistController.writeConfigurationFile()
 
         # Revert settings file (default prior to changing the settings file)
