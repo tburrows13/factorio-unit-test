@@ -27,11 +27,25 @@ class UnitTestConfiguration:
             self.configurations = configData.get("configurations", [])
             self.tests = configData.get("tests", {})
 
+            # Apply default settings to each configuration
+            for configName, configData in self.configurations.items():
+                if "settings" not in configData:
+                    configData["settings"] = {}
+                for settingStage, stageSettings in self.default_settings.items():
+                    if settingStage not in configData["settings"]:
+                        configData["settings"][settingStage] = {}
+                    for settingName, settingDefaultValue in stageSettings.items():
+                        if settingName not in configData["settings"][settingStage]:
+                            configData["settings"][settingStage][
+                                settingName
+                            ] = settingDefaultValue
+
     def __iter__(
         self,
     ) -> Iterable[tuple[str, ConfigurationType]]:
         return iter(self.configurations.items())
 
+    """
     def addDefaultSetting(
         self,
         settingStage: str,
@@ -60,3 +74,4 @@ class UnitTestConfiguration:
             "settings": settingCustomisation,
             "mods": modList,
         }
+    """
