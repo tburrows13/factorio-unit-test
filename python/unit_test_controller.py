@@ -5,11 +5,11 @@ from pathlib import Path
 
 # from mod_builder import ModBuilder
 # from mod_downloader import ModDownloader
-from modlist_controller import ModlistController
-from settings_controller import SettingsController
-from factorio_controller import FactorioController
-from unit_test_configuration import UnitTestConfiguration
-from unit_test_logger import UnitTestLogger
+from .modlist_controller import ModlistController
+from .settings_controller import SettingsController
+from .factorio_controller import FactorioController
+from .unit_test_configuration import UnitTestConfiguration
+from .unit_test_logger import UnitTestLogger
 
 
 class UnitTestController:
@@ -22,7 +22,12 @@ class UnitTestController:
         logToFile: bool = False,
     ):
         if not userDataDirectory:
-            userDataDirectory = Path(os.getenv("APPDATA")) / "Factorio/"
+            if appdataPath := os.getenv("APPDATA"):
+                userDataDirectory = (
+                    Path(appdataPath).expanduser().resolve() / "Factorio"
+                )
+            else:
+                raise FileNotFoundError("Could not find user data directory.")
 
         if not modDirectory:
             modDirectory = userDataDirectory / "mods"

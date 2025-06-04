@@ -9,13 +9,16 @@ class ModlistController:
     #   https://wiki.factorio.com/Mod_settings_file_format
     #   https://wiki.factorio.com/Property_tree
 
+    modDirectory: Path
+    modlist: Optional[dict]
+
     def __init__(
         self,
         userDataDirectory: Optional[Path] = None,
         modDirectory: Optional[Path] = None,
     ):
         if modDirectory:
-            self.modDirectory: Path = modDirectory
+            self.modDirectory = modDirectory
         elif userDataDirectory:
             self.modDirectory = userDataDirectory / "mods"
         else:

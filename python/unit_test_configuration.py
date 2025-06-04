@@ -1,5 +1,5 @@
 from __future__ import annotations
-from typing import Iterable, Optional
+from typing import Iterable, Optional, TypedDict
 from pathlib import Path
 import json
 import _jsonnet
@@ -7,25 +7,32 @@ import _jsonnet
 SettingsType = dict[str, dict[str, bool]]
 ModListType = list[str]
 TestListType = dict[str, dict]
-ConfigurationType = dict[str, SettingsType | ModListType]
+ConfigurationType = TypedDict(
+    "ConfigurationType", {"settings": SettingsType, "mods": ModListType}
+)
 
 
 class UnitTestConfiguration:
     """An iterable object containing all test configurations."""
 
+    modName: str
+    default_settings: SettingsType
+    configurations: dict[str, ConfigurationType]
+    tests: TestListType
+
     def __init__(self, modName: str, configFile: Optional[Path]):
-        self.modName: str = modName
-        self.default_settings: SettingsType = {}
-        self.configurations: dict[str, ConfigurationType] = {}
-        self.tests: TestListType = {}
+        self.modName = modName
+        self.default_settings = {}
+        self.configurations = {}
+        self.tests = {}
 
         # Read config json and populate configurations
         if configFile is not None:
             configDataStr = _jsonnet.evaluate_file(configFile)
-            configData = json.loads(configDataStr)
-            self.default_settings = configData.get("default_settings", {})
-            self.configurations = configData.get("configurations", [])
-            self.tests = configData.get("tests", {})
+            allConfigData = json.loads(configDataStr)
+            self.default_settings = allConfigData.get("default_settings", {})
+            self.configurations = allConfigData.get("configurations", [])
+            self.tests = allConfigData.get("tests", {})
 
             # Apply default settings to each configuration
             for configName, configData in self.configurations.items():

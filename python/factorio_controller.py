@@ -8,6 +8,11 @@ from pathlib import Path
 
 
 class FactorioController:
+    factorioPath: Path
+    log: Callable[[str], None]
+    factorioArgs: list[str]
+    factorioProcess: Optional[subprocess.Popen]
+
     def __init__(
         self,
         factorioPath: Optional[Path] = None,
@@ -15,20 +20,18 @@ class FactorioController:
         log: Optional[Callable[[str], None]] = None,
     ):
         if factorioPath is None:
-            self.factorioPath: Path = (
+            self.factorioPath = (
                 Path(self.__retrieveSteamGameInstallLocation(427520))
                 / "bin/x64/factorio.exe"
             )
         else:
             self.factorioPath = factorioPath
         if log is None:
-            self.log: Callable[[str], None] = lambda msg: print(
-                f"factorio-unit-test: {msg}"
-            )
+            self.log = lambda msg: print(f"factorio-unit-test: {msg}")
         else:
-            self.log: Callable[[str], None] = log
-        self.factorioArgs: list = self.__createFactorioArgs(modDirectory)
-        self.factorioProcess: Optional[subprocess.Popen] = None
+            self.log = log
+        self.factorioArgs = self.__createFactorioArgs(modDirectory)
+        self.factorioProcess = None
 
     def launchGame(self) -> None:
         # https://developer.valvesoftware.com/wiki/Command_Line_Options#Steam_.28Windows.29
@@ -46,6 +49,10 @@ class FactorioController:
             raise fnfe
 
     def terminateGame(self) -> None:
+        if self.factorioProcess is None:
+            self.log("No factorio process to terminate.")
+            return
+
         if self.factorioProcess.poll() is None:
             self.factorioProcess.terminate()
             self.log(f"Closing {self.factorioPath.name}")
@@ -55,6 +62,11 @@ class FactorioController:
         self.factorioProcess = None
 
     def getGameOutput(self) -> Iterable[Union[str, bool]]:
+        if self.factorioProcess is None:
+            raise RuntimeError(
+                "Factorio process is not running. Please launch the game first."
+            )
+
         for stdoutLine in iter(self.factorioProcess.stdout.readline, ""):
             lineData = stdoutLine.strip().decode("utf-8")
             if lineData == "":

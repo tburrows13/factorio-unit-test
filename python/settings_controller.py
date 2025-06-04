@@ -1,10 +1,22 @@
-from typing import Union, Optional
+from typing import Union, Optional, BinaryIO
 import os, sys, getopt
 import struct
 from pathlib import Path
+from enum import IntEnum
+
+
+class PTreeType(IntEnum):
+    NONE = 0
+    BOOL = 1
+    NUMBER = 2
+    STRING = 3
+    LIST = 4
+    DICTIONARY = 5
 
 
 class SettingsFileReader:
+    file: BinaryIO
+
     def __init__(self, file):
         self.file = file
 
@@ -38,17 +50,17 @@ class SettingsFileReader:
     def readDictionary(self, dictName: str = "") -> Union[bool, float, str, dict]:
         treeType = self.readByte()
         treeBool = self.readBool()
-        if treeType == 0:  # None
+        if treeType == PTreeType.NONE:
             raise NotImplementedError
-        elif treeType == 1:  # Bool
+        elif treeType == PTreeType.BOOL:
             return self.readBool()
-        elif treeType == 2:  # Number
+        elif treeType == PTreeType.NUMBER:
             return self.readNumber()
-        elif treeType == 3:  # String
+        elif treeType == PTreeType.STRING:
             return self.readString()
-        elif treeType == 4:  # List
+        elif treeType == PTreeType.LIST:
             raise NotImplementedError
-        elif treeType == 5:  # Dictionary
+        elif treeType == PTreeType.DICTIONARY:
             treeVal = dict()
             dictSize = self.readUnsignedInteger()
             for dictIndex in range(dictSize):
@@ -60,7 +72,7 @@ class SettingsFileReader:
 
 
 class SettingsFileWriter:
-    types = {"none": 0, "bool": 1, "number": 2, "string": 3, "list": 4, "dictionary": 5}
+    file: BinaryIO
 
     def __init__(self, file):
         self.file = file
@@ -94,7 +106,7 @@ class SettingsFileWriter:
             self.file.write(value.encode("utf-8"))
 
     def writeDictionary(self, value: dict) -> None:
-        self.writePropertyType("dictionary")
+        self.writePropertyType(PTreeType.DICTIONARY)
         dictSize = len(value.keys())
         self.writeUnsignedInteger(dictSize)
         for dictIndex in range(dictSize):
@@ -103,13 +115,13 @@ class SettingsFileWriter:
             if type(dictValue) is None:
                 raise NotImplementedError
             elif type(dictValue) is bool:
-                self.writePropertyType("bool")
+                self.writePropertyType(PTreeType.BOOL)
                 self.writeBool(dictValue)
             elif type(dictValue) is float:
-                self.writePropertyType("number")
+                self.writePropertyType(PTreeType.NUMBER)
                 self.writeNumber(dictValue)
             elif type(dictValue) is str:
-                self.writePropertyType("string")
+                self.writePropertyType(PTreeType.STRING)
                 self.writeString(dictValue)
             elif type(dictValue) is list:
                 raise NotImplementedError
@@ -120,8 +132,8 @@ class SettingsFileWriter:
         for v in range(4):
             self.writeUnsignedShort(version[v])
 
-    def writePropertyType(self, type: str) -> None:
-        self.writeByte(self.types.get(type))
+    def writePropertyType(self, type: PTreeType) -> None:
+        self.writeByte(type)
         self.writeBool(False)
 
 
@@ -129,6 +141,9 @@ class SettingsController:
     # References:
     #   https://wiki.factorio.com/Mod_settings_file_format
     #   https://wiki.factorio.com/Property_tree
+
+    modDirectory: Path
+    settings: Optional[dict]
 
     def __init__(
         self,
@@ -190,14 +205,14 @@ class SettingsController:
             modSettings.writeBool(False)
 
             # Property tree
-            modSettings.writePropertyType("dictionary")
+            modSettings.writePropertyType(PTreeType.DICTIONARY)
 
             modSettingsStages = ["startup", "runtime-global", "runtime-per-user"]
             modSettings.writeUnsignedInteger(len(modSettingsStages))
             for modSettingsStage in modSettingsStages:
                 # print(f"\tWriting {modSettingsStage} settings")
                 modSettings.writeString(modSettingsStage)
-                modSettings.writePropertyType("dictionary")
+                modSettings.writePropertyType(PTreeType.DICTIONARY)
                 stageSettingCount = len(self.settings[modSettingsStage].keys())
                 modSettings.writeUnsignedInteger(stageSettingCount)
                 for stageSettingIndex in range(stageSettingCount):
