@@ -62,7 +62,7 @@ class UnitTestController:
         self.currentModlistController.writeConfigurationFile()
         self.currentSettingsController.writeSettingsFile()
 
-    def TestConfiguations(
+    def TestConfigurations(
         self,
         testConfigurations: UnitTestConfiguration,
         logSummary: bool = True,
@@ -167,4 +167,4 @@ if __name__ == "__main__":
         factorioFolderDir=factorioFolderDir,
         logToFile=logToFile,
         factorioModDir=factorioModDir,
-    ).TestConfiguations(UnitTestConfiguration())
+    ).TestConfigurations(UnitTestConfiguration())

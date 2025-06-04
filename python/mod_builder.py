@@ -25,7 +25,7 @@ class ModBuilder:
         else:
             self.modFolderDir = f"{os.path.abspath(factorioFolderDir)}/mods/"
 
-    def __isReleased(self, modName: str) -> None:
+    def __isReleased(self, modName: str) -> bool:
         if modName.find("angels") >= 0:
             if modName.find("liquidrobot") >= 0:
                 return False  # not released

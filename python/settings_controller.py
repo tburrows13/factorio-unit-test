@@ -1,4 +1,4 @@
-from typing import Union
+from typing import Union, Optional
 import os, sys, getopt
 import struct
 

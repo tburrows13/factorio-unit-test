@@ -1,5 +1,6 @@
 import os, sys, getopt
 import json
+from typing import Optional
 
 
 class ModlistController:

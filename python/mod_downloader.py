@@ -149,6 +149,9 @@ class ModDownloader:
                 and modVersion == release["version"]
             ):
                 return release
+        raise NameError(
+            f"Could not find a mod release for factorio version '{factorioVersion}' and mod version '{modVersion}'."
+        )
 
     def __deleteAllVersions(self, modName: str, deleteZip: bool = True) -> None:
         # deleting folders

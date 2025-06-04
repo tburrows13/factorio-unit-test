@@ -1,4 +1,4 @@
-from typing import Callable, Union, Optional
+from typing import Callable, Union, Optional, Iterable
 import os, subprocess
 from shlex import shlex
 import json
@@ -55,7 +55,7 @@ class FactorioController:
             self.log(f"{os.path.basename(self.factorioExe)} terminated unexpectedly...")
         self.factorioProcess = None
 
-    def getGameOutput(self) -> Union[str, bool]:
+    def getGameOutput(self) -> Iterable[Union[str, bool]]:
         for stdoutLine in iter(self.factorioProcess.stdout.readline, ""):
             lineData = stdoutLine.strip().decode("utf-8")
             if lineData == "":
@@ -66,7 +66,7 @@ class FactorioController:
         return_code = self.factorioProcess.wait()
         if return_code:
             raise subprocess.CalledProcessError(return_code, self.factorioExe)
-        return False  # App terminated
+        yield False  # App terminated
 
     def executeUnitTests(self) -> bool:
         # This does not actually execute anything, it waits till the mod signals the tests are finished while logging all unit test results

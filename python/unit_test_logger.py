@@ -7,7 +7,7 @@ from datetime import datetime
 
 
 class UnitTestLogger:
-    def __init__(self, logToFile: bool = False) -> UnitTestLogger:
+    def __init__(self, logToFile: bool = False):
         self.logTofile: bool = logToFile
         self.logFilePath: str = os.path.abspath(
             f"{os.path.dirname(__file__)}/../log/unit_test_{datetime.now().strftime('%Y%m%d-%H%M%S')}.txt"
