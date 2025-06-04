@@ -70,13 +70,23 @@ def main():
         logToFile = args.log
         modToTest = args.modname
 
-        UnitTestController(
+        testController = UnitTestController(
             updateMods=False,
             factorioPath=factorioPath,
             userDataDirectory=userDataDirectory,
             modDirectory=modDirectory,
             logToFile=logToFile,
-        ).TestConfigurations(UnitTestConfiguration())
+        )
+        
+        configFile = testController.modDirectory / modToTest / "unit-test-config.jsonnet"
+        if not configFile.exists():
+            raise FileNotFoundError(
+                f"Configuration file {configFile} does not exist. Please ensure the mod has a valid unit test configuration."
+            )
+        testController.logger(f"Using configuration file: {configFile}")
+
+        testConfigurations = UnitTestConfiguration(configFile)
+        testController.TestConfigurations(testConfigurations)
 
 
 if __name__ == "__main__":

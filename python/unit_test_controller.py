@@ -3,8 +3,8 @@ from typing import Optional
 import os, sys, getopt
 from pathlib import Path
 
-from mod_builder import ModBuilder
-from mod_downloader import ModDownloader
+# from mod_builder import ModBuilder
+# from mod_downloader import ModDownloader
 from modlist_controller import ModlistController
 from settings_controller import SettingsController
 from factorio_controller import FactorioController
@@ -65,9 +65,9 @@ class UnitTestController:
         logSummary: bool = True,
     ) -> None:
         testResults: dict[str, bool] = dict()
-        for configName, modList, settingCustomisation in testConfigurations:
+        for configName, config in testConfigurations:
             self.__logTestConfiguration(configName)
-            self.__setupTestConfiguration(modList, settingCustomisation)
+            self.__setupTestConfiguration(config["mods"], config["settings"])
             testResults[configName] = self.__executeUnitTests()
         if logSummary:
             self.logger("Summary:", leading_newline=True)
