@@ -94,7 +94,7 @@ class FactorioController:
                         ]
                     )
                     return False  # Error during launch launch
-            elif type(line) is bool and line == False:
+            elif type(line) is bool and line is False:
                 return False  # Terminated factorio
         return False  # unexpected end
 
@@ -195,8 +195,8 @@ class FactorioController:
             self.factorioExe
         )  # because factorio expects the exe as first arg...
         # args.extend(convert_to_arglist("--verbose"))
-        args.extend(convert_to_arglist(f"--load-scenario base/freeplay"))
-        if factorioModDir != None:
+        args.extend(convert_to_arglist("--load-scenario base/freeplay"))
+        if factorioModDir is not None:
             args.append("--mod-directory")
             args.append(factorioModDir)
 

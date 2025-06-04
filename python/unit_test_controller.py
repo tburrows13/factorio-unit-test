@@ -116,7 +116,7 @@ class UnitTestController:
         self.modlistController.disableAllMods()
         for modName in modList:
             self.modlistController.enableMod(modName)
-        if not "angelsdev-unit-test" in modList:
+        if "angelsdev-unit-test" not in modList:
             self.modlistController.enableMod("angelsdev-unit-test")
         self.modlistController.writeConfigurationFile()
 

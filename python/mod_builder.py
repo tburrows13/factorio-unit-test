@@ -18,7 +18,7 @@ class ModBuilder:
             if self.__isReleased(modName)
         ]
 
-        if factorioModDir != None:
+        if factorioModDir is not None:
             self.modFolderDir = factorioModDir
         elif factorioFolderDir is None:
             self.modFolderDir = f"{os.getenv('APPDATA')}/Factorio/mods/"
