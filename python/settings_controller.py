@@ -12,6 +12,8 @@ class PTreeType(IntEnum):
     STRING = 3
     LIST = 4
     DICTIONARY = 5
+    SIGNED_LONG = 6
+    UNSIGNED_LONG = 7
 
 
 class SettingsFileReader:
@@ -35,6 +37,12 @@ class SettingsFileReader:
 
         value = self.readByte()
         return value if value < 255 else self.readUnsignedInteger(spaceOptimised=False)
+
+    def readSignedLong(self) -> int:
+        return int.from_bytes(self.file.read(8), byteorder="little", signed=True)
+
+    def readUnsignedLong(self) -> int:
+        return int.from_bytes(self.file.read(8), byteorder="little")
 
     def readNumber(self) -> float:
         # IEEE 754 double-precision binary floating-point format
@@ -67,6 +75,10 @@ class SettingsFileReader:
                 dictKey = self.readString()
                 treeVal[dictIndex] = [dictKey, self.readDictionary()]
             return treeVal
+        elif treeType == PTreeType.SIGNED_LONG:
+            return self.readSignedLong()
+        elif treeType == PTreeType.UNSIGNED_LONG:
+            return self.readUnsignedLong()
         else:
             raise ValueError(f"Type '{treeType}' is invalid for dict {dictName}.")
 
@@ -93,6 +105,12 @@ class SettingsFileWriter:
                 self.writeUnsignedInteger(value, spaceOptimised=False)
         else:
             self.file.write(value.to_bytes(4, "little"))
+
+    def writeSignedLong(self, value: int) -> None:
+        self.file.write(value.to_bytes(8, "little", signed=True))
+
+    def writeUnsignedLong(self, value: int) -> None:
+        self.file.write(value.to_bytes(8, "little"))
 
     def writeNumber(self, value: float) -> None:
         # IEEE 754 double-precision binary floating-point format
@@ -127,6 +145,17 @@ class SettingsFileWriter:
                 raise NotImplementedError
             elif type(dictValue) is dict:
                 raise NotImplementedError
+            elif type(dictValue) is int:
+                if dictValue < 0:
+                    self.writePropertyType(PTreeType.SIGNED_LONG)
+                    self.writeSignedLong(dictValue)
+                else:
+                    self.writePropertyType(PTreeType.UNSIGNED_LONG)
+                    self.writeUnsignedLong(dictValue)
+            else:
+                raise ValueError(
+                    f"Type '{type(dictValue).__name__}' is invalid for dict {dictKey}."
+                )
 
     def writeVersion(self, version: list) -> None:
         for v in range(4):
