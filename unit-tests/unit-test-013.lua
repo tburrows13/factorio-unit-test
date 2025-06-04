@@ -9,4 +9,4 @@ local unit_test_013 = function()
   return unit_test_functions.test_successful
 end
 
-return unit_test_013
+return {unit_test_013 = unit_test_013}

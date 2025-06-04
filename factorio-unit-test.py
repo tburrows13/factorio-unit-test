@@ -77,15 +77,17 @@ def main():
             modDirectory=modDirectory,
             logToFile=logToFile,
         )
-        
-        configFile = testController.modDirectory / modToTest / "unit-test-config.jsonnet"
+
+        configFile = (
+            testController.modDirectory / modToTest / "unit-test-config.jsonnet"
+        )
         if not configFile.exists():
             raise FileNotFoundError(
                 f"Configuration file {configFile} does not exist. Please ensure the mod has a valid unit test configuration."
             )
         testController.logger(f"Using configuration file: {configFile}")
 
-        testConfigurations = UnitTestConfiguration(configFile)
+        testConfigurations = UnitTestConfiguration(modToTest, configFile)
         testController.TestConfigurations(testConfigurations)
 
 

@@ -17,4 +17,4 @@ local unit_test_001 = function()
   --return unit_test_functions.test_invalid  -- unit testing structure failed.
 end
 
-return unit_test_001
+return {unit_test_001 = unit_test_001} -- return a table containing each test.

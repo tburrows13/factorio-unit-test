@@ -111,4 +111,4 @@ local unit_test_004 = function()
   return unit_test_result
 end
 
-return unit_test_004
+return {unit_test_004 = unit_test_004}

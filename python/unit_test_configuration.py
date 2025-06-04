@@ -1,19 +1,23 @@
 from __future__ import annotations
 from typing import Iterable, Optional
+from pathlib import Path
 import json
 import _jsonnet
 
 SettingsType = dict[str, dict[str, bool]]
 ModListType = list[str]
+TestListType = dict[str, dict]
 ConfigurationType = dict[str, SettingsType | ModListType]
 
 
 class UnitTestConfiguration:
     """An iterable object containing all test configurations."""
 
-    def __init__(self, configFile: Optional[Path]):
+    def __init__(self, modName: str, configFile: Optional[Path]):
+        self.modName: str = modName
         self.default_settings: SettingsType = {}
         self.configurations: dict[str, ConfigurationType] = {}
+        self.tests: TestListType = {}
 
         # Read config json and populate configurations
         if configFile is not None:
@@ -21,6 +25,7 @@ class UnitTestConfiguration:
             configData = json.loads(configDataStr)
             self.default_settings = configData.get("default_settings", {})
             self.configurations = configData.get("configurations", [])
+            self.tests = configData.get("tests", {})
 
     def __iter__(
         self,

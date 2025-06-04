@@ -1,6 +1,6 @@
 from __future__ import annotations
-from typing import Optional
-import os, sys, getopt
+from typing import Optional, Any
+import os, sys, shutil, getopt
 from pathlib import Path
 
 # from mod_builder import ModBuilder
@@ -68,6 +68,7 @@ class UnitTestController:
         for configName, config in testConfigurations:
             self.__logTestConfiguration(configName)
             self.__setupTestConfiguration(config["mods"], config["settings"])
+            self.__setupTestFiles(testConfigurations.modName, testConfigurations.tests)
             testResults[configName] = self.__executeUnitTests()
         if logSummary:
             self.logger("Summary:", leading_newline=True)
@@ -132,6 +133,40 @@ class UnitTestController:
                     settingsStage, settingsName, settingsValue
                 )
         self.settingsController.writeSettingsFile()
+
+    def __setupTestFiles(self, modName: str, testFiles: dict[str, Any]) -> None:
+        # Copy across all test files and populate test list file
+        modDirectory = self.modlistController.modDirectory
+        testDir = modDirectory / "factorio-unit-test/temp"
+        if testDir.exists():
+            shutil.rmtree(testDir)
+        testDir.mkdir()
+
+        # Build up test list file as we go
+        testListFileStr = "return {\n"
+
+        for test in testFiles.keys():
+            print("Copying test file:", test)
+            if test.startswith("common."):
+                test = test[7:]  # Remove 'common.' prefix
+                # Take from factorio-unit-test mod rather than the mod being tested
+                for file_path in (
+                    modDirectory / "factorio-unit-test" / "unit-tests"
+                ).glob(test + ".lua"):
+                    shutil.copy(file_path, testDir / file_path.name)
+                    testListFileStr += f'  "{file_path.name}",\n'
+            else:
+                for file_path in (modDirectory / modName / "unit-tests").glob(
+                    test + ".lua"
+                ):
+                    shutil.copy(file_path, testDir / file_path.name)
+                    testListFileStr += f'  "{file_path.name}",\n'
+
+        testListFileStr += "}\n"
+        with (modDirectory / "factorio-unit-test" / "temp-test-list.lua").open(
+            "w"
+        ) as tempTestListFile:
+            tempTestListFile.write(testListFileStr)
 
     def __executeUnitTests(self) -> bool:
         # Execute unit tests for the current test configuration

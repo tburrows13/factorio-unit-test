@@ -39,5 +39,11 @@
                 "angelsaddons-storage",
             ],
         },
+    },
+    tests:
+    {
+        "test-science-packs": {},
+        "common.unit-test-001": {},
+        "common.unit-test-01*": {},  // Can use wildcard patterns: https://docs.python.org/3/library/pathlib.html#pathlib-pattern-language
     }
 }
