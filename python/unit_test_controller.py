@@ -13,19 +13,19 @@ from unit_test_logger import UnitTestLogger
 
 
 class UnitTestController:
-
     def __init__(
         self,
         updateMods: bool = True,
-        factorioInstallDir: Optional[Path] = None,
-        factorioFolderDir: Optional[Path] = None,
+        factorioPath: Optional[Path] = None,
+        userDataDirectory: Optional[Path] = None,
+        modDirectory: Optional[Path] = None,
         logToFile: bool = False,
-        factorioModDir: Optional[Path] = None,
     ):
-        if factorioFolderDir is None:
-            self.factorioFolderDir: Path = Path(f"{os.getenv('APPDATA')}/Factorio/")
-        else:
-            self.factorioFolderDir = Path(factorioFolderDir)
+        if not userDataDirectory:
+            userDataDirectory = Path(os.getenv("APPDATA")) / "Factorio/"
+
+        if not modDirectory:
+            modDirectory = userDataDirectory / "mods"
 
         """
         if updateMods:
@@ -35,11 +35,11 @@ class UnitTestController:
 
         # Backup the current mod config and mod settings
         self.currentModlistController = ModlistController(
-            self.factorioFolderDir, factorioModDir
+            userDataDirectory, modDirectory
         )
         self.currentModlistController.readConfigurationFile()
         self.currentSettingsController = SettingsController(
-            self.factorioFolderDir, factorioModDir
+            userDataDirectory, modDirectory
         )
         self.currentSettingsController.readSettingsFile()
 
@@ -47,14 +47,10 @@ class UnitTestController:
         self.logger = UnitTestLogger(logToFile)
 
         # New controllers for the unit tests
-        self.modlistController = ModlistController(
-            self.factorioFolderDir, factorioModDir
-        )
-        self.settingsController = SettingsController(
-            self.factorioFolderDir, factorioModDir
-        )
+        self.modlistController = ModlistController(userDataDirectory, modDirectory)
+        self.settingsController = SettingsController(userDataDirectory, modDirectory)
         self.factorioController = FactorioController(
-            factorioInstallDir, self.logger, factorioModDir
+            factorioPath, modDirectory, self.logger
         )
 
     def __del__(self):
@@ -145,6 +141,7 @@ class UnitTestController:
         return testResult
 
 
+"""
 if __name__ == "__main__":
     factorioFolderDir: Optional[Path] = None
     factorioInstallDir: Optional[Path] = None
@@ -171,3 +168,4 @@ if __name__ == "__main__":
         logToFile=logToFile,
         factorioModDir=factorioModDir,
     ).TestConfigurations(UnitTestConfiguration())
+"""

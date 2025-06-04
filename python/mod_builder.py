@@ -4,7 +4,6 @@ import json
 
 
 class ModBuilder:
-
     def __init__(
         self,
         factorioFolderDir: Optional[str] = None,

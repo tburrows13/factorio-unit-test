@@ -8,51 +8,50 @@ from pathlib import Path
 
 
 class FactorioController:
-
     def __init__(
         self,
-        factorioInstallDir: Optional[Path] = None,
+        factorioPath: Optional[Path] = None,
+        modDirectory: Optional[Path] = None,
         log: Optional[Callable[[str], None]] = None,
-        factorioModDir: Optional[Path] = None,
     ):
-        if factorioInstallDir is None:
-            self.factorioExe: Path = (
+        if factorioPath is None:
+            self.factorioPath: Path = (
                 Path(self.__retrieveSteamGameInstallLocation(427520))
                 / "bin/x64/factorio.exe"
             )
         else:
-            self.factorioExe = factorioInstallDir / "bin/x64/factorio.exe"
+            self.factorioPath = factorioPath
         if log is None:
             self.log: Callable[[str], None] = lambda msg: print(
                 f"angelsdev-unit-test: {msg}"
             )
         else:
             self.log: Callable[[str], None] = log
-        self.factorioArgs: list = self.__createFactorioArgs(factorioModDir)
+        self.factorioArgs: list = self.__createFactorioArgs(modDirectory)
         self.factorioProcess: Optional[subprocess.Popen] = None
 
     def launchGame(self) -> None:
         # https://developer.valvesoftware.com/wiki/Command_Line_Options#Steam_.28Windows.29
-        self.log(f"Launching {os.path.basename(self.factorioExe)}")
+        self.log(f"Launching {self.factorioPath.name}")
         try:
             self.factorioProcess = subprocess.Popen(
-                executable=self.factorioExe,
+                executable=self.factorioPath,
                 args=self.factorioArgs,
-                cwd=os.path.dirname(self.factorioExe),
+                cwd=self.factorioPath.parent,
                 stdout=subprocess.PIPE,
                 stderr=subprocess.STDOUT,
             )
         except FileNotFoundError as fnfe:
-            print(f"The system could not find {self.factorioExe}.")
+            print(f"The system could not find {self.factorioPath}.")
             raise fnfe
 
     def terminateGame(self) -> None:
         if self.factorioProcess.poll() is None:
             self.factorioProcess.terminate()
-            self.log(f"Closing {os.path.basename(self.factorioExe)}")
+            self.log(f"Closing {self.factorioPath.name}")
             time.sleep(3)  # Allow the game to terminate fully
         else:
-            self.log(f"{os.path.basename(self.factorioExe)} terminated unexpectedly...")
+            self.log(f"{self.factorioPath.name} terminated unexpectedly...")
         self.factorioProcess = None
 
     def getGameOutput(self) -> Iterable[Union[str, bool]]:
@@ -65,7 +64,7 @@ class FactorioController:
         self.factorioProcess.stdout.close()
         return_code = self.factorioProcess.wait()
         if return_code:
-            raise subprocess.CalledProcessError(return_code, self.factorioExe)
+            raise subprocess.CalledProcessError(return_code, self.factorioPath)
         yield False  # App terminated
 
     def executeUnitTests(self) -> bool:
@@ -187,19 +186,19 @@ class FactorioController:
 
         return steamGameFolder
 
-    def __createFactorioArgs(self, factorioModDir: Optional[Path] = None) -> list:
+    def __createFactorioArgs(self, modDirectory: Optional[Path] = None) -> list:
         def convert_to_arglist(arg: str) -> list:
             return arg.split(" ")
 
         args = []  # https://wiki.factorio.com/Command_line_parameters
         args.append(
-            str(self.factorioExe)
+            str(self.factorioPath)
         )  # because factorio expects the exe as first arg...
         # args.extend(convert_to_arglist("--verbose"))
         args.extend(convert_to_arglist("--load-scenario base/freeplay"))
-        if factorioModDir is not None:
+        if modDirectory is not None:
             args.append("--mod-directory")
-            args.append(str(factorioModDir))
+            args.append(str(modDirectory))
 
         return args
 

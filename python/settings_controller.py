@@ -132,18 +132,18 @@ class SettingsController:
 
     def __init__(
         self,
-        factorioFolderDir: Optional[Path] = None,
-        factorioModDir: Optional[Path] = None,
+        userDataDirectory: Optional[Path] = None,
+        modDirectory: Optional[Path] = None,
     ):
-        if factorioModDir is not None:
-            self.modFolderDir = Path(factorioModDir)
-        elif factorioFolderDir is None:
-            self.modFolderDir = Path(os.getenv("APPDATA")) / "Factorio" / "mods"
+        if modDirectory:
+            self.modDirectory: Path = modDirectory
+        elif userDataDirectory:
+            self.modDirectory = userDataDirectory / "mods"
         else:
-            self.modFolderDir = Path(factorioFolderDir) / "mods"
+            self.modDirectory = Path(os.getenv("APPDATA")) / "Factorio" / "mods"
 
     def readSettingsFile(self, filename: str = "mod-settings.dat") -> None:
-        filepath = self.modFolderDir / filename
+        filepath = self.modDirectory / filename
         with filepath.open("rb") as modSettingsFile:
             modSettings = SettingsFileReader(modSettingsFile)
             self.settings = dict()
@@ -179,7 +179,7 @@ class SettingsController:
                     ]
 
     def writeSettingsFile(self, filename: str = "mod-settings.dat") -> None:
-        filepath = self.modFolderDir / filename
+        filepath = self.modDirectory / filename
         filepath.unlink(missing_ok=True)  # Delete current file if exists
         with filepath.open("wb") as modSettingsFile:
             modSettings = SettingsFileWriter(modSettingsFile)

@@ -5,7 +5,6 @@ import json
 
 
 class ModDownloader:
-
     def __init__(self, modName: str, factorioFolderDir: Optional[str] = None):
         if factorioFolderDir is None:
             self.factorioFolderDir = (
