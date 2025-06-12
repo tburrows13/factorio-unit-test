@@ -41,6 +41,8 @@ local execute_unit_tests = function()
       )
       unit_tests_result = unit_test_functions.test_invalid
       break
+    elseif unit_test_result == unit_test_functions.test_unfinished then -- unfinished test
+      -- TODO
     else
       unit_test_functions.print_msg(string.format("Unexpected result for unit test %s!", unit_test_name), 0)
       break

@@ -1,6 +1,6 @@
 from __future__ import annotations
 from typing import Optional, Any
-import os, sys, shutil, getopt
+import os, sys, shutil, getopt, re
 from pathlib import Path
 
 # from mod_builder import ModBuilder
@@ -161,14 +161,18 @@ class UnitTestController:
                 if not file_paths:
                     self.logger(f"No matching test files found for common.{test}")
                 for file_path in file_paths:
-                    shutil.copy(file_path, testDir / file_path.name)
+                    dest_path = testDir / file_path.name
+                    shutil.copy(file_path, dest_path)
+                    self.__applyMacros(dest_path)
                     testListFileStr += f'  "{file_path.stem}",\n'
             else:
                 file_paths = sorted((modDirectory / modName / "unit-tests").glob(test + ".lua"))
                 if not file_paths:
                     self.logger(f"No matching test files found for {test}")
                 for file_path in file_paths:
-                    shutil.copy(file_path, testDir / file_path.name)
+                    dest_path = testDir / file_path.name
+                    shutil.copy(file_path, dest_path)
+                    self.__applyMacros(dest_path)
                     testListFileStr += f'  "{file_path.stem}",\n'
 
         testListFileStr += "}\n"
@@ -183,6 +187,47 @@ class UnitTestController:
         testResult: bool = self.factorioController.executeUnitTests()
         self.factorioController.terminateGame()
         return testResult
+
+    def __applyMacros(self, filePath: Path) -> None:
+        """Apply macro transformations to a Lua file."""
+        with filePath.open('r') as file:
+            content = file.read()
+        
+        # Transform ASSERT(expression, log-message) to if expression then LOG(log-message) return FAIL end
+        # Use regex to match ASSERT calls with proper parentheses handling
+        def replace_assert(match):
+            # Extract the expression and log message
+            inner_content = match.group(1)
+            
+            # Find the comma that separates expression from log message
+            # We need to handle nested parentheses properly
+            paren_count = 0
+            comma_pos = -1
+            for i, char in enumerate(inner_content):
+                if char == '(':
+                    paren_count += 1
+                elif char == ')':
+                    paren_count -= 1
+                elif char == ',' and paren_count == 0:
+                    comma_pos = i
+                    break
+            
+            if comma_pos == -1:
+                # No comma found, malformed ASSERT
+                return match.group(0)
+            
+            expression = inner_content[:comma_pos].strip()
+            log_message = inner_content[comma_pos + 1:].strip()
+            
+            return f"if not ({expression}) then LOG({log_message}) return FAIL end"
+        
+        # Apply the transformation
+        pattern = r'ASSERT\(([^)]*(?:\([^)]*\)[^)]*)*)\)'
+        content = re.sub(pattern, replace_assert, content)
+        
+        # Write the modified content back to the file
+        with filePath.open('w') as file:
+            file.write(content)
 
 
 """
