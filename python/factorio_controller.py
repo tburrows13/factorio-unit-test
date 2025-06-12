@@ -37,12 +37,17 @@ class FactorioController:
         # https://developer.valvesoftware.com/wiki/Command_Line_Options#Steam_.28Windows.29
         self.log(f"Launching {self.factorioPath.name}")
         try:
+            # Prevents Steam from requiring user confirmation of launch
+            env = os.environ.copy()
+            env['SteamAppId'] = '427520'
+            
             self.factorioProcess = subprocess.Popen(
                 executable=self.factorioPath,
                 args=self.factorioArgs,
                 cwd=self.factorioPath.parent,
                 stdout=subprocess.PIPE,
                 stderr=subprocess.STDOUT,
+                env=env,
             )
         except FileNotFoundError as fnfe:
             print(f"The system could not find {self.factorioPath}.")

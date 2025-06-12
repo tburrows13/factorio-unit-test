@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
 try:
     import _jsonnet
-except ImportError as ex:
+except ModuleNotFoundError as ex:
     print("Error: Importing jsonnet failed")
     print(
         "Please install the jsonnet package by running `pip install jsonnet` or `python3 -m pip install jsonnet`."
