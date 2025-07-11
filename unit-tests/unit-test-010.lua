@@ -58,7 +58,36 @@ local function process_tech(tech)
                   recipes[recipe.name].categories[category_name] = true
                 end
               end
+              -- TODO restrict asteroids by unlocked space locations
+              if entity.type == "asteroid-collector" then
+                for _, asteroid_chunk in pairs(prototypes.asteroid_chunk) do
+                  if asteroid_chunk.mineable_properties and asteroid_chunk.mineable_properties.products then
+                    for _, asteroid_product in pairs(asteroid_chunk.mineable_properties.products) do
+                      if asteroid_product.type == "item" then
+                        recipes[recipe.name].products.items[asteroid_product.name] = true
+                      else
+                        recipes[recipe.name].products.fluids[asteroid_product.name] = true
+                      end
+                    end
+                  end
+                end
+              end
             end
+
+            -- TODO instead check if item is ammo that creates projectile that creates a capture-robot entity
+            if item.name == "capture-robot-rocket" then
+              for _, spawner in pairs(prototypes.get_entity_filtered({
+                { filter = "type", mode = "and", type = "unit-spawner" },
+              })) do
+                entity = spawner.captured_spawner_entity
+                if entity and entity.crafting_categories then
+                  for category_name, _ in pairs(entity.crafting_categories) do
+                    recipes[recipe.name].categories[category_name] = true
+                  end
+                end
+              end
+            end
+
           else
             recipes[recipe.name].products.fluids[product.name] = true
           end
@@ -410,9 +439,11 @@ local function make_starting_unlocks()
     end
   end
 
-  -- Add "crafting" and "smelting" to starting_unlocks.categories
+  -- Add basic categories to starting_unlocks.categories
   starting_unlocks.categories["crafting"] = true
   starting_unlocks.categories["smelting"] = true
+  starting_unlocks.categories["pressing"] = true
+  starting_unlocks.categories["electronics"] = true
 
   starting_unlocks = process_tech(starting_tech)
 end

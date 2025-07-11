@@ -79,7 +79,7 @@ local unit_test_008 = function()
   local entity_prototypes = prototypes.get_entity_filtered(entity_filters)
 
   for entity_name, entity in pairs(entity_prototypes) do
-    if entity.mineable_properties.products then
+    if entity.mineable_properties and entity.mineable_properties.products then
       for _, product in pairs(entity.mineable_properties.products) do
         if product.type == "item" then
           items_to_ignore[product.name] = true
@@ -89,6 +89,18 @@ local unit_test_008 = function()
       end
     end
   end
+  for entity_name, entity in pairs(prototypes.asteroid_chunk) do
+    if entity.mineable_properties and entity.mineable_properties.products then
+      for _, product in pairs(entity.mineable_properties.products) do
+        if product.type == "item" then
+          items_to_ignore[product.name] = true
+        else
+          fluids_to_ignore[product.name] = true
+        end
+      end
+    end
+  end
+
 
   -- Populate items_to_ignore with rocket launch products
   local entity_filters = {}

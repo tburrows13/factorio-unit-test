@@ -1,8 +1,14 @@
 -- This unit test attempts to validates recycling recipes
 local unit_test_functions = require("unit-test-functions")
 
-local function check_recipe_products(item_name, recycing_recipe)
+local function check_recipe_products(item, recycing_recipe)
+  local item_name = item.name
   if #recycing_recipe.products == 1 and (recycing_recipe.products[1].name == item_name) then
+    return unit_test_functions.test_successful
+  end
+
+  -- Recycling into the item's spoil result is ok (e.g. nutrients)
+  if item.spoil_result and (item.spoil_result.name == recycing_recipe.products[1].name) then
     return unit_test_functions.test_successful
   end
 
@@ -60,13 +66,14 @@ local unit_test_014 = function()
     { filter = "hidden",       invert = true, mode = "and", },
     { filter = "is-parameter", invert = true, mode = "and", },
     { filter = "flag",         invert = true, mode = "and", flag = "only-in-cursor" },
+    { filter = "name", name = "scrap", invert = true, mode = "and" },  -- scrap has special recycling recipe
   }
 
   -- Check every item to see if it has a recycling recipe
   for item_name, item in pairs(prototypes.get_item_filtered(filters)) do
     local recipe = prototypes.recipe[item.name.."-recycling"]
-    if recipe and recipe.category == "recycling" then
-      unit_test_result = check_recipe_products(item_name, recipe)
+    if recipe and (recipe.category == "recycling") then
+      unit_test_result = check_recipe_products(item, recipe) and unit_test_result
     else
       unit_test_functions.print_msg(string.format("Item %q has no recycling recipe.", item_name))
       unit_test_result = unit_test_functions.test_failed
